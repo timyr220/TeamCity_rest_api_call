@@ -1,25 +1,14 @@
 import logging
 import threading
 import time
-from config_loader import ConfigLoader
+from distutils.command.config import config
+from os import environ
+
+from config_loader import ConfigLoader, TBConnectionConfig
 from entities.teamcity_agent import TeamCityAgent
 from entities.thingsboard_manager import ThingsBoardManager
 from services.device_manager import DeviceManager
 from services.telemetry_service import TelemetryService
-
-# Logging setup
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", handlers=[
-    logging.FileHandler("logs/main.log"), logging.StreamHandler()])
-
-# Load configuration
-teamcity_config = ConfigLoader.load_config('config/teamcity_agents.json')
-tb_config = ConfigLoader.load_config('config/thingsboard.json')
-
-TEAMCITY_URL = teamcity_config['url']
-POLL_INTERVAL = teamcity_config['poll_interval']
-THINGSBOARD_URL = tb_config['url']
-THINGSBOARD_USERNAME = tb_config['username']
-THINGSBOARD_PASSWORD = tb_config['password']
 
 
 def monitor_teamcity(teamcity_agent, telemetry_service, profile_id):
@@ -40,9 +29,30 @@ def monitor_teamcity(teamcity_agent, telemetry_service, profile_id):
 
 
 if __name__ == "__main__":
+
+    # TODO: Move paths configuration to environmental variables:
+    # Config path
+    #  "TB_BUILD_MONITOR_CONFIG" = ~/PycharmProjects/pythonProject12/config
+    # DATA_PATH (path to folder where we should save devices.json)
+    # LOGS_PATH (path to folder where we should save logs of our application)
+
+    # Logging setup
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", handlers=[
+        logging.FileHandler("logs/main.log"), logging.StreamHandler()])
+
+    # Load configuration
+    teamcity_config = ConfigLoader.load_config('config/teamcity_agents.json')
+    tb_config: TBConnectionConfig = ConfigLoader.load_config('config/thingsboard.json', TBConnectionConfig)
+
+    TEAMCITY_URL = teamcity_config['url']
+    POLL_INTERVAL = teamcity_config['poll_interval']
+    THINGSBOARD_USERNAME = tb_config['username']
+    THINGSBOARD_PASSWORD = tb_config['password']
+
+
     # Initialize objects for working with TeamCity and ThingsBoard
     teamcity_agent = TeamCityAgent(TEAMCITY_URL)
-    tb_manager = ThingsBoardManager(THINGSBOARD_URL, THINGSBOARD_USERNAME, THINGSBOARD_PASSWORD)
+    tb_manager = ThingsBoardManager(tb_config.url, THINGSBOARD_USERNAME, THINGSBOARD_PASSWORD)
     device_manager = DeviceManager(tb_manager)
     telemetry_service = TelemetryService(tb_manager, device_manager)
 

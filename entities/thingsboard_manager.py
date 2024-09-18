@@ -1,9 +1,10 @@
-import json
 import logging
 
+from simplejson import load, dump, JSONDecodeError
 from tb_rest_client.models.models_ce import Device
-from tb_rest_client.rest_client_pe import RestClientPE
 from tb_rest_client.rest import ApiException
+from tb_rest_client.rest_client_pe import RestClientPE
+
 
 class ThingsBoardManager:
     def __init__(self, tb_url, username, password):
@@ -15,16 +16,16 @@ class ThingsBoardManager:
         """Load devices from devices.json file."""
         try:
             with open('devices.json', 'r') as file:
-                return json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
+                return load(file)
+        except (FileNotFoundError, JSONDecodeError):
             logging.info("The devices.json file was not found or is empty. Starting with an empty list.")
             return {}
 
     def _save_devices(self):
         """Save devices to devices.json file."""
         try:
-            with open('devices.json', 'w') as file:
-                json.dump(self.devices, file, indent=4)
+            with open('data/devices.json', 'w') as file:
+                dump(self.devices, file, indent=4)
             logging.info("Devices successfully saved to file.")
         except Exception as e:
             logging.error(f"Error saving devices: {e}")

@@ -1,5 +1,3 @@
-import logging
-
 class DeviceManager:
     def __init__(self, tb_manager):
         self.tb_manager = tb_manager

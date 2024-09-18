@@ -1,10 +1,15 @@
-import requests
 import logging
 import xml.etree.ElementTree as ET
+
+import requests
+
+# TODO: Optimize import, to avoid extra imported function that not used in code
+
 
 class TeamCityAgent:
     def __init__(self, url):
         self.url = url
+
 
     def get_agents(self):
         """Get the list of TeamCity agents and their statuses."""
@@ -39,6 +44,7 @@ class TeamCityAgent:
         except ET.ParseError as e:
             logging.error(f"Error parsing XML response: {e}")
             return []
+
 
     def get_agent_detail(self, href):
         """Retrieve detailed information about the agent's status."""
